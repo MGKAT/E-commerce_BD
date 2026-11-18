@@ -8,7 +8,7 @@
 
 ---
 
-## 📋 Contexte et Objectifs
+## Contexte et Objectifs
 
 **LDLC** est une plateforme e-commerce spécialisée dans le matériel informatique et high-tech gérant :
 * **+ 27 000 références produits** réparties sur **+ 600 marques**
@@ -26,7 +26,7 @@ Face aux limites d'une base relationnelle monolithique, ce projet propose une **
 
 ---
 
-## 🏗️ Architecture Globale
+## rchitecture Globale
 
 ```text
                       ┌───────────────────────────┐
@@ -64,3 +64,13 @@ Face aux limites d'une base relationnelle monolithique, ce projet propose une **
                             │(CausalCluster)│
                             │Recommandations│
                             └───────────────┘
+
+
+##  Décisions Technologiques par Lot
+
+| Lot | Domaine | Technologie | Modèle | Positionnement CAP & Choix Clés |
+| :--- | :--- | :--- | :--- | :--- |
+| **Lot 1** | **Catalogue Produits** | **MongoDB** | Document | **CP** (`w:majority`). Schéma flexible (`Attribute Pattern`), `Subset Pattern` pour les 10 derniers avis, `Extended Reference` pour les marques. |
+| **Lot 2** | **Paniers & Sessions** | **Redis** | Clé-Valeur | **AP** (réplication asynchrone + AOF `everysec`). Structures `Hash` atomiques (`HINCRBY`), TTL glissant (30 min session / 7 j panier). |
+| **Lot 3** | **Logs & Commandes** | **Cassandra** | Colonnes larges | **AP** (`LOCAL_ONE` pour les logs avec TTL 400j) / **Quorum** (`LOCAL_QUORUM` avec `RF=3` pour les commandes). Modélisation *Query-Driven* et bucketing anti-hotspots. |
+| **Lot 4** | **Recommandations** | **Neo4j** | Graphe | **CP** (Causal Cluster). Parcours Cypher multi-sauts via nœuds pivots (`Socket`, `FormFactor`) et co-achats (`BOUGHT_WITH`). |
