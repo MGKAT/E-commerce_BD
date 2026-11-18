@@ -138,3 +138,188 @@ NSL-NoSQL-LDLC/
 └── docker-compose.yml
 ```
 *Cette structure représente l'organisation prévue du dépôt et peut être adaptée selon l'avancement du prototype.
+
+## Exemples de requêtes
+Les exemples ci-dessous illustrent les opérations principales prévues pour chaque base. Ils sont à adapter aux données et aux schémas effectivement déployés.
+
+### MongoDB — Catalogue
+
+**Insérer un produit**
+
+```javascript
+db.products.insertOne({
+  _id: "CPU-7800X3D",
+  name: "AMD Ryzen 7 7800X3D",
+  brand: { id: "amd", name: "AMD" },
+  categories: ["composants", "processeurs"],
+  price: { amount: 389.95, currency: "EUR" },
+  status: "active",
+  schema_version: 2,
+  attributes: [
+    { k: "socket", v: "AM5" },
+    { k: "cores", v: 8 }
+  ],
+  specs: { architecture: "Zen 4", threads: 16, cache_l3_mb: 96 },
+  compatible_with: ["MB-B650-TUF"],
+  rating: { count: 2, sum: 9 },
+  created_at: new Date(),
+  updated_at: new Date()
+})
+```
+
+**Lister les processeurs AMD à moins de 500 €**
+
+```javascript
+db.products.find({
+  categories: "processeurs",
+  "brand.id": "amd",
+  "price.amount": { $lt: 500 },
+  status: "active"
+}).sort({ "price.amount": 1 })
+```
+
+**Rechercher les produits ayant un socket AM5**
+
+```javascript
+db.products.find({
+  attributes: { $elemMatch: { k: "socket", v: "AM5" } }
+})
+```
+
+**Mettre à jour le prix**
+
+```javascript
+db.products.updateOne(
+  { _id: "CPU-7800X3D" },
+  { $set: { "price.amount": 369.95, updated_at: new Date() } }
+)
+```
+
+### Redis — Paniers et sessions
+
+**Créer une session et définir son expiration**
+
+```redis
+HSET session:9f3a1c user_id u42 ip 127.0.0.1 csrf token123
+EXPIRE session:9f3a1c 1800
+```
+
+**Ajouter un produit au panier**
+
+```redis
+HINCRBY cart:u:42 CPU-7800X3D 1
+EXPIRE cart:u:42 604800
+```
+
+**Lire le panier**
+
+```redis
+HGETALL cart:u:42
+```
+
+**Retirer un produit**
+
+```redis
+HDEL cart:u:42 CPU-7800X3D
+```
+
+**Consulter le TTL**
+
+```redis
+TTL cart:u:42
+```
+
+### Cassandra — Logs et commandes
+
+**Créer une table d'événements par acteur et par jour**
+
+```sql
+CREATE TABLE events_by_actor_day (
+    actor_id text,
+    day date,
+    event_ts timeuuid,
+    event_type text,
+    product_id text,
+    payload text,
+    PRIMARY KEY ((actor_id, day), event_ts)
+) WITH CLUSTERING ORDER BY (event_ts DESC);
+```
+
+**Enregistrer un événement**
+
+```sql
+INSERT INTO events_by_actor_day (
+    actor_id, day, event_ts, event_type, product_id, payload
+) VALUES (
+    'u42', '2026-11-18', now(), 'product_view',
+    'CPU-7800X3D', '{"source":"catalogue"}'
+);
+```
+
+**Lire les événements d'un utilisateur pour une journée**
+
+```sql
+SELECT event_ts, event_type, product_id, payload
+FROM events_by_actor_day
+WHERE actor_id = 'u42'
+  AND day = '2026-11-18';
+```
+
+**Créer une table d'historique de commandes par client**
+
+```sql
+CREATE TABLE orders_by_customer (
+    customer_id text,
+    order_date timestamp,
+    order_id text,
+    status text,
+    total decimal,
+    PRIMARY KEY (customer_id, order_date, order_id)
+) WITH CLUSTERING ORDER BY (order_date DESC);
+```
+
+**Lire les commandes d'un client**
+
+```sql
+SELECT order_date, order_id, status, total
+FROM orders_by_customer
+WHERE customer_id = 'u42';
+```
+
+### Neo4j — Recommandations
+
+**Créer des produits et une relation de compatibilité**
+
+```cypher
+CREATE (cpu:Product {sku: 'CPU-7800X3D', name: 'AMD Ryzen 7 7800X3D', type: 'cpu'})
+CREATE (mb:Product {sku: 'MB-B650-TUF', name: 'ASUS B650 TUF', type: 'motherboard'})
+CREATE (cpu)-[:COMPATIBLE_WITH]->(mb);
+```
+
+**Rechercher les produits souvent achetés avec un processeur**
+
+```cypher
+MATCH (p:Product {sku: 'CPU-7800X3D'})-[r:BOUGHT_WITH]->(o:Product)
+RETURN o.name, r.count
+ORDER BY r.count DESC
+LIMIT 5;
+```
+
+**Rechercher les cartes mères compatibles via le socket**
+
+```cypher
+MATCH (cpu:Product {sku: 'CPU-7800X3D'})-[:USES_SOCKET]->(s:Socket)
+MATCH (mb:Product {type: 'motherboard'})-[:USES_SOCKET]->(s)
+RETURN mb.name, mb.price
+ORDER BY mb.price;
+```
+
+**Recommandation collaborative**
+
+```cypher
+MATCH (p:Product {sku: 'CPU-7800X3D'})<-[:BOUGHT]-(c:Customer)-[:BOUGHT]->(o:Product)
+WHERE o <> p
+RETURN o.name, count(DISTINCT c) AS customers
+ORDER BY customers DESC
+LIMIT 5;
+```
