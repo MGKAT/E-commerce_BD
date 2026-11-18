@@ -65,6 +65,7 @@ Face aux limites d'une base relationnelle monolithique, ce projet propose une **
                             │Recommandations│
                             └───────────────┘
 
+```
 
 ##  Décisions Technologiques par Lot
 
@@ -323,3 +324,18 @@ RETURN o.name, count(DISTINCT c) AS customers
 ORDER BY customers DESC
 LIMIT 5;
 ```
+
+## ⚙️rincipes architecturaux
+
+- **Persistance polyglotte :** chaque technologie est sélectionnée selon les besoins du domaine.
+- **Scalabilité :** possibilité d'évolution vers une architecture distribuée.
+- **Dénormalisation :** adaptée aux modèles NoSQL et aux accès métier.
+- **Cohérence à terme :** acceptée pour les statistiques et recommandations.
+- **Sources de vérité :** chaque domaine possède une base de référence.
+- **Sécurité :** accès contrôlés, réseau privé et gestion des secrets.
+- **Évolutivité :** architecture pouvant évoluer vers Docker Compose ou Kubernetes.
+
+## Conclusion
+
+Ce projet propose une architecture NoSQL moderne permettant de répondre aux contraintes de performance, de flexibilité et de volumétrie d'une plateforme e-commerce telle que LDLC.
+L'utilisation combinée de MongoDB, Redis, Cassandra et Neo4j permet de répondre aux besoins spécifiques de chaque domaine fonctionnel tout en assurant une architecture évolutive et adaptée aux enjeux du commerce électronique.
