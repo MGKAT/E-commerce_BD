@@ -138,7 +138,7 @@ NSL-NoSQL-LDLC/
 │   └── queries/
 └── docker-compose.yml
 ```
-*Cette structure représente l'organisation prévue du dépôt et peut être adaptée selon l'avancement du prototype.
+Cette structure représente l'organisation prévue du dépôt et peut être adaptée selon l'avancement du prototype.
 
 ## Exemples de requêtes
 Les exemples ci-dessous illustrent les opérations principales prévues pour chaque base. Ils sont à adapter aux données et aux schémas effectivement déployés.
