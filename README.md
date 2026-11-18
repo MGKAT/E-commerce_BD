@@ -106,3 +106,35 @@ Fonctionnalités :
 - Identification des produits fréquemment achetés ensemble.
 - Recherche de compatibilités entre composants.
 - Recommandations collaboratives.
+
+## Livrables
+
+- Document de conception technique.
+- Schéma d'architecture globale.
+- Modèles de données des différentes bases NoSQL.
+- Requêtes types MongoDB, Redis, Cassandra et Neo4j.
+- Justification des choix technologiques et des compromis.
+- Prototype éventuel de l'architecture.
+
+## Structure du projet
+
+```text
+NSL-NoSQL-LDLC/
+├── README.md
+├── docs/
+│   ├── conception_architecture.pdf
+│   └── architecture_globale.png
+├── mongodb/
+│   ├── schemas/
+│   └── queries/
+├── redis/
+│   └── commands/
+├── cassandra/
+│   ├── schemas/
+│   └── queries/
+├── neo4j/
+│   ├── schemas/
+│   └── queries/
+└── docker-compose.yml
+```
+*Cette structure représente l'organisation prévue du dépôt et peut être adaptée selon l'avancement du prototype.
