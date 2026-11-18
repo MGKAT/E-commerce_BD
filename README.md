@@ -26,7 +26,7 @@ Face aux limites d'une base relationnelle monolithique, ce projet propose une **
 
 ---
 
-## rchitecture Globale
+## Architecture Globale
 
 ```text
                       ┌───────────────────────────┐
@@ -68,9 +68,41 @@ Face aux limites d'une base relationnelle monolithique, ce projet propose une **
 
 ##  Décisions Technologiques par Lot
 
-| Lot | Domaine | Technologie | Modèle | Positionnement CAP & Choix Clés |
-| :--- | :--- | :--- | :--- | :--- |
-| **Lot 1** | **Catalogue Produits** | **MongoDB** | Document | **CP** (`w:majority`). Schéma flexible (`Attribute Pattern`), `Subset Pattern` pour les 10 derniers avis, `Extended Reference` pour les marques. |
-| **Lot 2** | **Paniers & Sessions** | **Redis** | Clé-Valeur | **AP** (réplication asynchrone + AOF `everysec`). Structures `Hash` atomiques (`HINCRBY`), TTL glissant (30 min session / 7 j panier). |
-| **Lot 3** | **Logs & Commandes** | **Cassandra** | Colonnes larges | **AP** (`LOCAL_ONE` pour les logs avec TTL 400j) / **Quorum** (`LOCAL_QUORUM` avec `RF=3` pour les commandes). Modélisation *Query-Driven* et bucketing anti-hotspots. |
-| **Lot 4** | **Recommandations** | **Neo4j** | Graphe | **CP** (Causal Cluster). Parcours Cypher multi-sauts via nœuds pivots (`Socket`, `FormFactor`) et co-achats (`BOUGHT_WITH`). |
+### Lot 1 – Catalogue produits (MongoDB)
+
+Gestion des fiches produits avec des caractéristiques variables selon les catégories.
+Fonctionnalités :
+- Stockage des produits et marques.
+- Gestion des caractéristiques techniques.
+- Gestion des avis clients.
+- Recherche et filtrage des produits.
+- Gestion des compatibilités.
+
+### Lot 2 – Paniers et sessions (Redis)
+
+Gestion des données temporaires nécessitant des performances élevées.
+Fonctionnalités :
+- Gestion des sessions utilisateurs.
+- Stockage des paniers.
+- Gestion des paniers anonymes.
+- Expiration automatique des données avec TTL.
+- Fusion des paniers lors de la connexion.
+
+### Lot 3 – Logs, analytics et commandes (Cassandra)
+
+Gestion des événements de navigation et des historiques.
+Fonctionnalités :
+- Enregistrement des événements utilisateurs.
+- Suivi des consultations produits.
+- Analyse des tendances de navigation.
+- Historique des commandes clients.
+- Gestion des données volumineuses et de leur rétention.
+
+### Lot 4 – Recommandations produits (Neo4j)
+
+Modélisation des relations entre les produits, clients et caractéristiques techniques.
+Fonctionnalités :
+- Recommandation de produits similaires.
+- Identification des produits fréquemment achetés ensemble.
+- Recherche de compatibilités entre composants.
+- Recommandations collaboratives.
